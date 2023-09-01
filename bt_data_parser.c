@@ -22,6 +22,39 @@ struct DataType data_types[] = {
     {0xFF, "Vendor Info"},
 };
 
+// Function to convert a single hex character to its decimal value
+int hexCharToDecimal(char hex) {
+    if (hex >= '0' && hex <= '9') {
+        return hex - '0';
+    } else if (hex >= 'A' && hex <= 'F') {
+        return 10 + (hex - 'A');
+    } else if (hex >= 'a' && hex <= 'f') {
+        return 10 + (hex - 'a');
+    } else {
+        return -1; // Invalid hex character
+    }
+}
+
+// Function to convert a hex string to an ASCII text string
+void hexToAscii(const char *hex, char *ascii) {
+    int len = strlen(hex);
+    int asciiIndex = 0;
+
+    for (int i = 0; i < len; i += 2) {
+        int highNibble = hexCharToDecimal(hex[i]);
+        int lowNibble = hexCharToDecimal(hex[i + 1]);
+
+        if (highNibble == -1 || lowNibble == -1) {
+            printf("Invalid hex string\n");
+            return;
+        }
+
+        char asciiChar = (char)((highNibble << 4) | lowNibble);
+        ascii[asciiIndex++] = asciiChar;
+    }
+
+    ascii[asciiIndex] = '\0';
+}
 
 // Function to parse and print data set
 void parse_data(const unsigned char *byte_data, size_t length, struct DataType* data_types) {
@@ -48,26 +81,45 @@ void parse_data(const unsigned char *byte_data, size_t length, struct DataType* 
 
     printf("Type: %hhu (%s)\n", data_type, data_type_name);
 
-    // Print usable data bytes
-    printf("Usable Data: ");
-    for (size_t i = 0; i < data_length - 2; ++i) {
-        printf("%02x ", usable_data[i]);
+    // Check if the data type is 0x09 (Device Name)
+    if (data_type == 0x09) {
+        // Print usable data bytes in hex in subsequent pairs
+        printf("Usable Data (Hex): ");
+        for (size_t i = 0; i < data_length - 1; ++i) {
+            printf("%02x ", usable_data[i]);
+        }
+        printf("\n");
+
+        // Convert Type 9 Usable Data from hex to ASCII
+        char hexString[2 * (data_length - 1) + 1];
+        for (size_t i = 0; i < data_length - 1; ++i) {
+            sprintf(hexString + 2 * i, "%02X", usable_data[i]);
+        }
+        hexString[2 * (data_length - 1)] = '\0';
+
+        char asciiString[100]; // Assuming the ASCII string won't exceed 100 characters
+        hexToAscii(hexString, asciiString);
+        printf("Usable Data (ASCII): %s\n", asciiString);
+    } else {
+        // Print usable data bytes in hex
+        printf("Usable Data (Hex): ");
+        for (size_t i = 0; i < data_length - 2; ++i) {
+            printf("%02x ", usable_data[i]);
+        }
+        printf("\n");
     }
-    printf("%02x\n", usable_data[data_length - 2]);
 }
 
 int main() {
-    
-    struct Data data = {0};
     // Example hex string
-    const char *hex_string = "02010607094654303030310DFF060070CAEA80FD02AA0B1301";
+    const char *hex_string = "020106110603CA7994F75310962242118A81FA00000909697670733074725817FFF1036FF22052C0000000000A0577B8411900000000";
     size_t hex_length = strlen(hex_string);
 
     // Check if hex string length is even
-    if (hex_length % 2 != 0) {
+    /*if (hex_length % 2 != 0) {
         printf("Hex string length must be even.\n");
         return 1;
-    }
+    }*/
 
     // Convert hex string to byte array
     size_t byte_count = hex_length / 2;
@@ -81,13 +133,13 @@ int main() {
     while (offset < byte_count) {
         // Calculate length of current data set
         unsigned char data_length = byte_data[offset];
-        
+
         // Parse and process the current data set
         parse_data(byte_data + offset, data_length, data_types);
-        
+
         // Move the offset to the next data set
         offset += data_length;
-        
+
         // Skip the first byte of the next set
         offset += 1;
     }
