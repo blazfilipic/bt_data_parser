@@ -17,7 +17,7 @@ struct Data {
 // Define data types and their corresponding names
 struct DataType data_types[] = {
     {0x01, "Property ID"},
-    {0x06, "Random Shit"}
+    {0x06, "Random Shit"},
     {0x09, "Device Name"},
     {0xFF, "Vendor Info"},
 };
