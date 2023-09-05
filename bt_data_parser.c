@@ -116,13 +116,13 @@ void parse_data(unsigned char *byte_data, size_t length, struct DataType* data_t
         }
         // Create a VendorInfo structure and populate it
         struct VendorInfo* vendor_info = (struct VendorInfo*)malloc(sizeof(struct VendorInfo));
-        vendor_info->food_temperature = (usable_data[1] << 8) | usable_data[0];
+        vendor_info->food_temperature = (usable_data[7] << 8) | usable_data[6];
         printf("Food Temperature: %04X \n", vendor_info->food_temperature);
         printf("Food Temperature: %d \n", vendor_info->food_temperature);
-        vendor_info->max_possible_temperature = (usable_data[3] << 8) | usable_data[2];
+        vendor_info->max_possible_temperature = (usable_data[9] << 8) | usable_data[8];
         printf("Max Temperature: %04X \n", vendor_info->max_possible_temperature);
         printf("Max Temperature: %d \n", vendor_info->max_possible_temperature);
-        vendor_info->battery_voltage = (usable_data[5] << 8) | usable_data[4];
+        vendor_info->battery_voltage = (usable_data[11] << 8) | usable_data[10];
         printf("Battery voltage: %04X \n", vendor_info->battery_voltage);
         printf("Battery voltage: %d \n", vendor_info->battery_voltage);
         /*etc*/
@@ -147,7 +147,7 @@ int main() {
     // Example hex string
     struct Data data_array[100]; // Assuming a maximum of 100 data sets
     size_t data_count = 0;
-    const char *hex_string = "020106110603CA7994F75310962242118A81FA00000909697670733074725817FFF1036FF22052C0000000000A0577B8411900000000";
+    const char *hex_string = "02010607094654303030310DFF060070CAEA80FD02AA0B1301";
     size_t hex_length = strlen(hex_string);
 
     // Check if hex string length is even
